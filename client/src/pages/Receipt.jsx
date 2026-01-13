@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   ArrowDownCircle, 
   Check, 
@@ -6,8 +6,7 @@ import {
   X, 
   User,
   FileText,
-  Hash,
-  DollarSign
+  Hash
 } from 'lucide-react';
 import PrintReceipt from '../components/PrintReceipt';
 import { getAddresses, createTransaction } from '../api';
@@ -101,38 +100,36 @@ export default function Receipt({ onBalanceUpdate }) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
+    <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
-            <ArrowDownCircle className="w-6 h-6 text-green-400" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-white">Cash Receipt</h1>
-            <p className="text-slate-400">Record incoming cash payment</p>
-          </div>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
+          <ArrowDownCircle className="w-5 h-5 text-green-600" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Cash Receipt</h1>
+          <p className="text-gray-500">Record incoming cash payment</p>
         </div>
       </div>
 
       {/* Success Message */}
       {success && (
-        <div className="p-4 rounded-xl bg-green-500/20 border border-green-500/30 flex items-center justify-between animate-slide-down">
+        <div className="p-4 rounded-lg bg-green-50 border border-green-200 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Check className="w-5 h-5 text-green-400" />
-            <span className="text-green-300">{success}</span>
+            <Check className="w-5 h-5 text-green-600" />
+            <span className="text-green-800">{success}</span>
           </div>
           <div className="flex items-center gap-2">
             {lastTransaction && (
               <button
                 onClick={handlePrint}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-500/20 text-green-300 hover:bg-green-500/30 transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
               >
                 <Printer size={16} />
                 <span>Print Receipt</span>
               </button>
             )}
-            <button onClick={() => setSuccess(null)} className="text-green-400 hover:text-green-300">
+            <button onClick={() => setSuccess(null)} className="text-green-600 hover:text-green-800">
               <X size={18} />
             </button>
           </div>
@@ -141,12 +138,12 @@ export default function Receipt({ onBalanceUpdate }) {
 
       {/* Error Message */}
       {error && (
-        <div className="p-4 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-between animate-slide-down">
+        <div className="p-4 rounded-lg bg-red-50 border border-red-200 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <X className="w-5 h-5 text-red-400" />
-            <span className="text-red-300">{error}</span>
+            <X className="w-5 h-5 text-red-600" />
+            <span className="text-red-800">{error}</span>
           </div>
-          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300">
+          <button onClick={() => setError(null)} className="text-red-600 hover:text-red-800">
             <X size={18} />
           </button>
         </div>
@@ -154,17 +151,17 @@ export default function Receipt({ onBalanceUpdate }) {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="p-6 rounded-2xl glass space-y-6">
+        <div className="p-6 rounded-lg bg-white border border-gray-200 shadow-sm space-y-5">
           {/* Address Selection */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <User size={16} />
               Received From
             </label>
             <select
               value={formData.address_id || (formData.address_name && !addresses.find(a => a.name === formData.address_name) ? 'custom' : '')}
               onChange={handleAddressSelect}
-              className="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700/50 text-white focus:border-green-500/50 transition-colors"
+              className="w-full px-4 py-2.5 rounded-lg bg-white border border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
             >
               <option value="">Select from address book...</option>
               {addresses.map(addr => (
@@ -176,23 +173,22 @@ export default function Receipt({ onBalanceUpdate }) {
 
           {/* Custom Name Input */}
           {(formData.address_id === '' || !addresses.find(a => a.id === formData.address_id)) && (
-            <div className="space-y-2 animate-slide-down">
-              <label className="text-sm font-medium text-slate-300">Name</label>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Name</label>
               <input
                 type="text"
                 value={formData.address_name}
                 onChange={(e) => setFormData({ ...formData, address_name: e.target.value })}
                 placeholder="Enter name..."
                 required
-                className="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700/50 text-white placeholder-slate-500 focus:border-green-500/50 transition-colors"
+                className="w-full px-4 py-2.5 rounded-lg bg-white border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
               />
             </div>
           )}
 
           {/* Amount */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
-              <DollarSign size={16} />
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               Amount (AED)
             </label>
             <div className="relative">
@@ -204,15 +200,15 @@ export default function Receipt({ onBalanceUpdate }) {
                 required
                 min="0.01"
                 step="0.01"
-                className="w-full px-4 py-4 rounded-xl bg-slate-800/50 border border-slate-700/50 text-white text-2xl font-mono placeholder-slate-500 focus:border-green-500/50 transition-colors"
+                className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-900 text-xl font-semibold placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">AED</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">AED</span>
             </div>
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <FileText size={16} />
               Description (Optional)
             </label>
@@ -221,13 +217,13 @@ export default function Receipt({ onBalanceUpdate }) {
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Enter description..."
               rows={3}
-              className="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700/50 text-white placeholder-slate-500 focus:border-green-500/50 transition-colors resize-none"
+              className="w-full px-4 py-2.5 rounded-lg bg-white border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors resize-none"
             />
           </div>
 
           {/* Reference Number */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <Hash size={16} />
               Reference Number (Optional)
             </label>
@@ -236,7 +232,7 @@ export default function Receipt({ onBalanceUpdate }) {
               value={formData.reference_number}
               onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })}
               placeholder="Auto-generated if empty"
-              className="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700/50 text-white placeholder-slate-500 focus:border-green-500/50 transition-colors"
+              className="w-full px-4 py-2.5 rounded-lg bg-white border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
             />
           </div>
         </div>
@@ -245,7 +241,7 @@ export default function Receipt({ onBalanceUpdate }) {
         <button
           type="submit"
           disabled={loading || !formData.address_name || !formData.amount}
-          className="w-full py-4 rounded-xl bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold text-lg shadow-lg shadow-green-500/25 hover:shadow-green-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? (
             <>

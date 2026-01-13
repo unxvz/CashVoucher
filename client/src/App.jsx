@@ -10,7 +10,7 @@ import {
   Users,
   Menu,
   X,
-  DollarSign
+  Wallet
 } from 'lucide-react';
 
 import Dashboard from './pages/Dashboard';
@@ -37,7 +37,7 @@ function App() {
 
   useEffect(() => {
     fetchBalance();
-    const interval = setInterval(fetchBalance, 5000);
+    const interval = setInterval(fetchBalance, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -53,70 +53,70 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen flex">
+      <div className="min-h-screen flex bg-gray-50">
         {/* Mobile menu button */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg glass text-slate-300 hover:text-white transition-colors"
+          className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-md text-gray-600 hover:text-gray-900 transition-colors"
         >
           {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
         {/* Sidebar */}
         <aside className={`
-          fixed lg:static inset-y-0 left-0 z-40 w-72 transform transition-transform duration-300 ease-in-out
+          fixed lg:static inset-y-0 left-0 z-40 w-64 transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          bg-slate-900/80 backdrop-blur-2xl border-r border-slate-800/50
+          bg-white border-r border-gray-200 shadow-sm
         `}>
           <div className="flex flex-col h-full">
             {/* Logo */}
-            <div className="p-6 border-b border-slate-800/50">
+            <div className="p-5 border-b border-gray-200">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/25">
-                  <DollarSign className="w-7 h-7 text-white" />
+                <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                  <Wallet className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-white">Cash Online</h1>
-                  <p className="text-xs text-slate-400">Management System</p>
+                  <h1 className="text-lg font-semibold text-gray-900">Cash Online</h1>
+                  <p className="text-xs text-gray-500">Management System</p>
                 </div>
               </div>
             </div>
 
             {/* Balance Card */}
             <div className="p-4">
-              <div className="p-4 rounded-xl bg-gradient-to-br from-primary-600/20 to-primary-700/10 border border-primary-500/20">
-                <p className="text-xs text-primary-300 uppercase tracking-wider mb-1">Current Balance</p>
-                <p className="text-2xl font-bold text-white font-mono">
+              <div className="p-4 rounded-lg bg-blue-50 border border-blue-100">
+                <p className="text-xs text-blue-600 font-medium uppercase tracking-wide mb-1">Current Balance</p>
+                <p className="text-xl font-bold text-gray-900">
                   {currentBalance.toLocaleString('en-AE', { minimumFractionDigits: 2 })}
-                  <span className="text-sm text-primary-300 ml-2">AED</span>
+                  <span className="text-sm text-gray-500 font-normal ml-1">AED</span>
                 </p>
               </div>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
               {navItems.map((item) => (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
                   className={({ isActive }) => `
-                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                    flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150
                     ${isActive 
-                      ? 'bg-primary-500/20 text-primary-400 shadow-lg shadow-primary-500/10' 
-                      : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                      ? 'bg-blue-50 text-blue-700 font-medium' 
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                     }
                   `}
                 >
                   <item.icon size={20} />
-                  <span className="font-medium">{item.label}</span>
+                  <span>{item.label}</span>
                 </NavLink>
               ))}
             </nav>
 
             {/* Footer */}
-            <div className="p-4 border-t border-slate-800/50">
-              <p className="text-xs text-slate-500 text-center">
+            <div className="p-4 border-t border-gray-200">
+              <p className="text-xs text-gray-400 text-center">
                 Currency: AED (Dirham)
               </p>
             </div>
@@ -126,14 +126,14 @@ function App() {
         {/* Overlay for mobile */}
         {sidebarOpen && (
           <div 
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            className="fixed inset-0 bg-black/20 z-30 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
         {/* Main content */}
         <main className="flex-1 lg:ml-0 min-h-screen">
-          <div className="p-4 lg:p-8 pt-16 lg:pt-8">
+          <div className="p-4 lg:p-6 pt-16 lg:pt-6 max-w-7xl mx-auto">
             <Routes>
               <Route path="/" element={<Dashboard onBalanceUpdate={fetchBalance} />} />
               <Route path="/receipt" element={<Receipt onBalanceUpdate={fetchBalance} />} />
