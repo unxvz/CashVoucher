@@ -1,5 +1,5 @@
 // Google Sheets API Configuration
-const API_URL = 'https://script.google.com/macros/s/AKfycby69l03yPUWV_evX1vChqIsTqFFMOndjl3-MmBrbo9Yglq6BdE_qgnARvSl63bCAs4/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzjVLu-_p765fvmN0u6u-GaozdHxSAoPM0VyDASKBQKuMWG7DEILVYpUks7rr3BEXV0/exec';
 
 // Helper function for GET requests
 async function apiGet(action, params = {}) {
