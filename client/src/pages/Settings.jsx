@@ -7,6 +7,7 @@ import {
   Info,
   RefreshCw
 } from 'lucide-react';
+import { getSettings, updateInitialBalance } from '../api';
 
 export default function SettingsPage({ onBalanceUpdate }) {
   const [settings, setSettings] = useState(null);
@@ -18,8 +19,7 @@ export default function SettingsPage({ onBalanceUpdate }) {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/settings');
-      const data = await res.json();
+      const data = await getSettings();
       setSettings(data);
       setInitialBalance(data.initial_balance?.toString() || '0');
     } catch (error) {
@@ -39,18 +39,12 @@ export default function SettingsPage({ onBalanceUpdate }) {
     setSuccess(null);
 
     try {
-      const res = await fetch('/api/settings/initial-balance', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ initial_balance: parseFloat(initialBalance) || 0 })
-      });
+      const data = await updateInitialBalance(parseFloat(initialBalance) || 0);
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to update settings');
+      if (data.error) {
+        throw new Error(data.error);
       }
 
-      const data = await res.json();
       setSettings(data);
       setSuccess('Settings updated successfully!');
       onBalanceUpdate?.();

@@ -13,6 +13,7 @@ import {
   User,
   RefreshCw
 } from 'lucide-react';
+import { getAddresses, createAddress, updateAddress, deleteAddress as apiDeleteAddress } from '../api';
 
 export default function AddressBook() {
   const [addresses, setAddresses] = useState([]);
@@ -31,9 +32,8 @@ export default function AddressBook() {
 
   const fetchAddresses = async () => {
     try {
-      const res = await fetch('/api/addresses');
-      const data = await res.json();
-      setAddresses(data);
+      const data = await getAddresses();
+      setAddresses(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching addresses:', error);
     } finally {
@@ -50,19 +50,15 @@ export default function AddressBook() {
     setError(null);
 
     try {
-      const url = editingAddress 
-        ? `/api/addresses/${editingAddress.id}`
-        : '/api/addresses';
-      
-      const res = await fetch(url, {
-        method: editingAddress ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+      let data;
+      if (editingAddress) {
+        data = await updateAddress({ ...formData, id: editingAddress.id });
+      } else {
+        data = await createAddress(formData);
+      }
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to save address');
+      if (data.error) {
+        throw new Error(data.error);
       }
 
       fetchAddresses();
@@ -76,8 +72,8 @@ export default function AddressBook() {
     if (!confirm('Are you sure you want to delete this address?')) return;
 
     try {
-      const res = await fetch(`/api/addresses/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete address');
+      const data = await apiDeleteAddress(id);
+      if (data.error) throw new Error(data.error);
       fetchAddresses();
     } catch (error) {
       console.error('Error deleting address:', error);

@@ -11,6 +11,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import PrintReceipt from '../components/PrintReceipt';
+import { getAddresses, getSettings, createTransaction } from '../api';
 
 export default function Payment({ onBalanceUpdate }) {
   const [addresses, setAddresses] = useState([]);
@@ -35,9 +36,8 @@ export default function Payment({ onBalanceUpdate }) {
 
   const fetchAddresses = async () => {
     try {
-      const res = await fetch('/api/addresses');
-      const data = await res.json();
-      setAddresses(data);
+      const data = await getAddresses();
+      setAddresses(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching addresses:', error);
     }
@@ -45,8 +45,7 @@ export default function Payment({ onBalanceUpdate }) {
 
   const fetchBalance = async () => {
     try {
-      const res = await fetch('/api/settings');
-      const data = await res.json();
+      const data = await getSettings();
       setCurrentBalance(data.current_balance || 0);
     } catch (error) {
       console.error('Error fetching balance:', error);
@@ -76,27 +75,21 @@ export default function Payment({ onBalanceUpdate }) {
     setSuccess(null);
 
     try {
-      const res = await fetch('/api/transactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'payment',
-          amount: parseFloat(formData.amount),
-          address_id: formData.address_id || null,
-          address_name: formData.address_name,
-          description: formData.description,
-          reference_number: formData.reference_number
-        })
+      const data = await createTransaction({
+        type: 'payment',
+        amount: parseFloat(formData.amount),
+        address_id: formData.address_id || null,
+        address_name: formData.address_name,
+        description: formData.description,
+        reference_number: formData.reference_number
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to create payment');
+      if (data.error) {
+        throw new Error(data.error);
       }
 
       setLastTransaction(data.transaction);
-      setSuccess(`Payment of ${data.transaction.amount.toLocaleString('en-AE', { minimumFractionDigits: 2 })} AED recorded successfully!`);
+      setSuccess(`Payment of ${parseFloat(data.transaction.amount).toLocaleString('en-AE', { minimumFractionDigits: 2 })} AED recorded successfully!`);
       setFormData({
         address_id: '',
         address_name: '',

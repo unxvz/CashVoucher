@@ -8,6 +8,7 @@ import {
   Calendar,
   RefreshCw
 } from 'lucide-react';
+import { getDashboard } from '../api';
 
 export default function Dashboard({ onBalanceUpdate }) {
   const [dashboard, setDashboard] = useState(null);
@@ -15,8 +16,7 @@ export default function Dashboard({ onBalanceUpdate }) {
 
   const fetchDashboard = async () => {
     try {
-      const res = await fetch('/api/dashboard');
-      const data = await res.json();
+      const data = await getDashboard();
       setDashboard(data);
     } catch (error) {
       console.error('Error fetching dashboard:', error);

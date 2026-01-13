@@ -10,6 +10,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import PrintReceipt from '../components/PrintReceipt';
+import { getAddresses, createTransaction } from '../api';
 
 export default function Receipt({ onBalanceUpdate }) {
   const [addresses, setAddresses] = useState([]);
@@ -32,9 +33,8 @@ export default function Receipt({ onBalanceUpdate }) {
 
   const fetchAddresses = async () => {
     try {
-      const res = await fetch('/api/addresses');
-      const data = await res.json();
-      setAddresses(data);
+      const data = await getAddresses();
+      setAddresses(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching addresses:', error);
     }
@@ -63,27 +63,21 @@ export default function Receipt({ onBalanceUpdate }) {
     setSuccess(null);
 
     try {
-      const res = await fetch('/api/transactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'receipt',
-          amount: parseFloat(formData.amount),
-          address_id: formData.address_id || null,
-          address_name: formData.address_name,
-          description: formData.description,
-          reference_number: formData.reference_number
-        })
+      const data = await createTransaction({
+        type: 'receipt',
+        amount: parseFloat(formData.amount),
+        address_id: formData.address_id || null,
+        address_name: formData.address_name,
+        description: formData.description,
+        reference_number: formData.reference_number
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to create receipt');
+      if (data.error) {
+        throw new Error(data.error);
       }
 
       setLastTransaction(data.transaction);
-      setSuccess(`Receipt of ${data.transaction.amount.toLocaleString('en-AE', { minimumFractionDigits: 2 })} AED recorded successfully!`);
+      setSuccess(`Receipt of ${parseFloat(data.transaction.amount).toLocaleString('en-AE', { minimumFractionDigits: 2 })} AED recorded successfully!`);
       setFormData({
         address_id: '',
         address_name: '',

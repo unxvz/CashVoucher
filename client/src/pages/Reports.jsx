@@ -11,6 +11,7 @@ import {
   TrendingUp,
   TrendingDown
 } from 'lucide-react';
+import { getDailyReport, getRangeReport } from '../api';
 
 export default function Reports() {
   const [reportType, setReportType] = useState('daily');
@@ -23,8 +24,7 @@ export default function Reports() {
   const fetchDailyReport = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/reports/daily?date=${date}`);
-      const data = await res.json();
+      const data = await getDailyReport(date);
       setReport({ ...data, type: 'daily' });
     } catch (error) {
       console.error('Error fetching report:', error);
@@ -37,8 +37,7 @@ export default function Reports() {
     if (!startDate || !endDate) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/reports/range?start_date=${startDate}&end_date=${endDate}`);
-      const data = await res.json();
+      const data = await getRangeReport(startDate, endDate);
       setReport({ ...data, type: 'range' });
     } catch (error) {
       console.error('Error fetching report:', error);

@@ -13,6 +13,7 @@ import {
   Eye
 } from 'lucide-react';
 import PrintReceipt from '../components/PrintReceipt';
+import { getTransactions } from '../api';
 
 export default function TransactionHistory() {
   const [transactions, setTransactions] = useState([]);
@@ -31,15 +32,14 @@ export default function TransactionHistory() {
   const fetchTransactions = async (page = 1) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page, limit: 20 });
-      if (filters.type) params.append('type', filters.type);
-      if (filters.start_date) params.append('start_date', filters.start_date);
-      if (filters.end_date) params.append('end_date', filters.end_date);
+      const params = { page, limit: 20 };
+      if (filters.type) params.type = filters.type;
+      if (filters.start_date) params.start_date = filters.start_date;
+      if (filters.end_date) params.end_date = filters.end_date;
 
-      const res = await fetch(`/api/transactions?${params}`);
-      const data = await res.json();
-      setTransactions(data.transactions);
-      setPagination(data.pagination);
+      const data = await getTransactions(params);
+      setTransactions(data.transactions || []);
+      setPagination(data.pagination || { page: 1, pages: 1, total: 0 });
     } catch (error) {
       console.error('Error fetching transactions:', error);
     } finally {

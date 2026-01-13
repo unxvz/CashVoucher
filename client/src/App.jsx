@@ -20,6 +20,7 @@ import TransactionHistory from './pages/TransactionHistory';
 import Reports from './pages/Reports';
 import AddressBook from './pages/AddressBook';
 import SettingsPage from './pages/Settings';
+import { getSettings } from './api';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,8 +28,7 @@ function App() {
 
   const fetchBalance = async () => {
     try {
-      const res = await fetch('/api/settings');
-      const data = await res.json();
+      const data = await getSettings();
       setCurrentBalance(data.current_balance || 0);
     } catch (error) {
       console.error('Error fetching balance:', error);
