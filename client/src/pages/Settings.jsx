@@ -5,17 +5,74 @@ import {
   Check,
   AlertTriangle,
   Info,
-  RefreshCw
+  RefreshCw,
+  Lock,
+  Eye,
+  EyeOff,
+  Shield
 } from 'lucide-react';
 import { getSettings, updateInitialBalance } from '../api';
 
+// Admin Password - Change this to your desired password
+const ADMIN_PASSWORD = 'admin123';
+
 export default function SettingsPage({ onBalanceUpdate }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState(null);
+  const [authAttempts, setAuthAttempts] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockTimer, setLockTimer] = useState(0);
+
   const [settings, setSettings] = useState(null);
   const [initialBalance, setInitialBalance] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
+
+  // Check if locked
+  useEffect(() => {
+    if (authAttempts >= 3) {
+      setIsLocked(true);
+      setLockTimer(30);
+    }
+  }, [authAttempts]);
+
+  // Lock timer countdown
+  useEffect(() => {
+    if (isLocked && lockTimer > 0) {
+      const timer = setTimeout(() => {
+        setLockTimer(lockTimer - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (lockTimer === 0 && isLocked) {
+      setIsLocked(false);
+      setAuthAttempts(0);
+    }
+  }, [isLocked, lockTimer]);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (isLocked) return;
+
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      setAuthError(null);
+      setPassword('');
+      fetchSettings();
+    } else {
+      setAuthAttempts(prev => prev + 1);
+      setAuthError(`Incorrect password. ${3 - authAttempts - 1} attempts remaining.`);
+      setPassword('');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setPassword('');
+  };
 
   const fetchSettings = async () => {
     try {
@@ -28,10 +85,6 @@ export default function SettingsPage({ onBalanceUpdate }) {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchSettings();
-  }, []);
 
   const handleSave = async () => {
     setSaving(true);
@@ -55,6 +108,74 @@ export default function SettingsPage({ onBalanceUpdate }) {
     }
   };
 
+  // Login Screen
+  if (!isAuthenticated) {
+    return (
+      <div className="max-w-md mx-auto mt-20">
+        <div className="p-8 rounded-lg bg-white border border-gray-200 shadow-sm">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-4">
+              <Shield className="w-8 h-8 text-blue-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">Admin Access</h1>
+            <p className="text-gray-500 mt-2">Enter admin password to access settings</p>
+          </div>
+
+          {authError && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2 text-red-700 text-sm">
+              <AlertTriangle size={16} />
+              {authError}
+            </div>
+          )}
+
+          {isLocked && (
+            <div className="mb-4 p-3 rounded-lg bg-yellow-50 border border-yellow-200 flex items-center gap-2 text-yellow-700 text-sm">
+              <Lock size={16} />
+              Too many attempts. Try again in {lockTimer} seconds.
+            </div>
+          )}
+
+          <form onSubmit={handleLogin}>
+            <div className="space-y-2 mb-6">
+              <label className="text-sm font-medium text-gray-700">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter admin password..."
+                  disabled={isLocked}
+                  className="w-full pl-10 pr-10 py-3 rounded-lg bg-white border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLocked || !password}
+              className="w-full py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <Lock size={18} />
+              <span>Access Settings</span>
+            </button>
+          </form>
+
+          <p className="text-xs text-gray-400 text-center mt-6">
+            Contact administrator if you forgot the password
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -66,14 +187,29 @@ export default function SettingsPage({ onBalanceUpdate }) {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-          <SettingsIcon className="w-5 h-5 text-gray-600" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+            <SettingsIcon className="w-5 h-5 text-gray-600" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Admin Settings</h1>
+            <p className="text-gray-500">Configure your cash management system</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-500">Configure your cash management system</p>
-        </div>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+        >
+          <Lock size={16} />
+          <span>Logout</span>
+        </button>
+      </div>
+
+      {/* Admin Badge */}
+      <div className="p-3 rounded-lg bg-green-50 border border-green-200 flex items-center gap-2 text-green-700">
+        <Shield size={18} />
+        <span className="font-medium">Authenticated as Administrator</span>
       </div>
 
       {/* Success Message */}
@@ -180,42 +316,17 @@ export default function SettingsPage({ onBalanceUpdate }) {
         </div>
       </div>
 
-      {/* About */}
-      <div className="p-6 rounded-lg bg-white border border-gray-200 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">About Cash Online</h3>
-        <p className="text-gray-500 text-sm leading-relaxed">
-          Cash Online is a comprehensive cash management system designed for recording and tracking 
-          cash receipts and payments. Features include:
-        </p>
-        <ul className="mt-4 space-y-2 text-sm text-gray-700">
-          <li className="flex items-center gap-2">
-            <Check className="w-4 h-4 text-green-600" />
-            Record cash receipts and payments
-          </li>
-          <li className="flex items-center gap-2">
-            <Check className="w-4 h-4 text-green-600" />
-            Print A5 receipts for signatures
-          </li>
-          <li className="flex items-center gap-2">
-            <Check className="w-4 h-4 text-green-600" />
-            View complete transaction history
-          </li>
-          <li className="flex items-center gap-2">
-            <Check className="w-4 h-4 text-green-600" />
-            Generate daily and custom reports
-          </li>
-          <li className="flex items-center gap-2">
-            <Check className="w-4 h-4 text-green-600" />
-            Manage address book
-          </li>
-          <li className="flex items-center gap-2">
-            <Check className="w-4 h-4 text-green-600" />
-            Track closing balance at end of day
-          </li>
-        </ul>
-        <p className="mt-4 text-xs text-gray-400">
-          Version 1.0.0 • Built with React + Google Sheets
-        </p>
+      {/* Security Notice */}
+      <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-200">
+        <div className="flex items-start gap-3">
+          <Shield className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-yellow-800">
+            <p className="font-medium">Security Notice</p>
+            <p className="mt-1">
+              Remember to logout when you're done. Your session will remain active until you logout or close the browser.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

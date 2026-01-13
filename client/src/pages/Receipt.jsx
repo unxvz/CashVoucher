@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   ArrowDownCircle, 
   Check, 
@@ -9,12 +9,10 @@ import {
   Hash
 } from 'lucide-react';
 import PrintReceipt from '../components/PrintReceipt';
-import { getAddresses, createTransaction } from '../api';
+import { createTransaction } from '../api';
 
 export default function Receipt({ onBalanceUpdate }) {
-  const [addresses, setAddresses] = useState([]);
   const [formData, setFormData] = useState({
-    address_id: '',
     address_name: '',
     amount: '',
     description: '',
@@ -26,35 +24,6 @@ export default function Receipt({ onBalanceUpdate }) {
   const [showPrint, setShowPrint] = useState(false);
   const [lastTransaction, setLastTransaction] = useState(null);
 
-  useEffect(() => {
-    fetchAddresses();
-  }, []);
-
-  const fetchAddresses = async () => {
-    try {
-      const data = await getAddresses();
-      setAddresses(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Error fetching addresses:', error);
-    }
-  };
-
-  const handleAddressSelect = (e) => {
-    const selectedId = e.target.value;
-    if (selectedId === 'custom') {
-      setFormData({ ...formData, address_id: '', address_name: '' });
-    } else if (selectedId) {
-      const address = addresses.find(a => a.id === selectedId);
-      setFormData({ 
-        ...formData, 
-        address_id: selectedId, 
-        address_name: address?.name || '' 
-      });
-    } else {
-      setFormData({ ...formData, address_id: '', address_name: '' });
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -65,7 +34,7 @@ export default function Receipt({ onBalanceUpdate }) {
       const data = await createTransaction({
         type: 'receipt',
         amount: parseFloat(formData.amount),
-        address_id: formData.address_id || null,
+        address_id: null,
         address_name: formData.address_name,
         description: formData.description,
         reference_number: formData.reference_number
@@ -78,7 +47,6 @@ export default function Receipt({ onBalanceUpdate }) {
       setLastTransaction(data.transaction);
       setSuccess(`Receipt of ${parseFloat(data.transaction.amount).toLocaleString('en-AE', { minimumFractionDigits: 2 })} AED recorded successfully!`);
       setFormData({
-        address_id: '',
         address_name: '',
         amount: '',
         description: '',
@@ -152,39 +120,21 @@ export default function Receipt({ onBalanceUpdate }) {
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="p-6 rounded-lg bg-white border border-gray-200 shadow-sm space-y-5">
-          {/* Address Selection */}
+          {/* Name Input */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <User size={16} />
               Received From
             </label>
-            <select
-              value={formData.address_id || (formData.address_name && !addresses.find(a => a.name === formData.address_name) ? 'custom' : '')}
-              onChange={handleAddressSelect}
-              className="w-full px-4 py-2.5 rounded-lg bg-white border border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
-            >
-              <option value="">Select from address book...</option>
-              {addresses.map(addr => (
-                <option key={addr.id} value={addr.id}>{addr.name}</option>
-              ))}
-              <option value="custom">+ Enter custom name</option>
-            </select>
+            <input
+              type="text"
+              value={formData.address_name}
+              onChange={(e) => setFormData({ ...formData, address_name: e.target.value })}
+              placeholder="Enter name..."
+              required
+              className="w-full px-4 py-2.5 rounded-lg bg-white border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
+            />
           </div>
-
-          {/* Custom Name Input */}
-          {(formData.address_id === '' || !addresses.find(a => a.id === formData.address_id)) && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Name</label>
-              <input
-                type="text"
-                value={formData.address_name}
-                onChange={(e) => setFormData({ ...formData, address_name: e.target.value })}
-                placeholder="Enter name..."
-                required
-                className="w-full px-4 py-2.5 rounded-lg bg-white border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
-              />
-            </div>
-          )}
 
           {/* Amount */}
           <div className="space-y-2">

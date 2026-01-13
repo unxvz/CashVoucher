@@ -7,10 +7,10 @@ import {
   History, 
   FileText, 
   Settings,
-  Users,
   Menu,
   X,
-  Wallet
+  Wallet,
+  Lock
 } from 'lucide-react';
 
 import Dashboard from './pages/Dashboard';
@@ -18,7 +18,6 @@ import Receipt from './pages/Receipt';
 import Payment from './pages/Payment';
 import TransactionHistory from './pages/TransactionHistory';
 import Reports from './pages/Reports';
-import AddressBook from './pages/AddressBook';
 import SettingsPage from './pages/Settings';
 import { getSettings } from './api';
 
@@ -47,8 +46,7 @@ function App() {
     { path: '/payment', icon: ArrowUpCircle, label: 'Cash Payment' },
     { path: '/history', icon: History, label: 'History' },
     { path: '/reports', icon: FileText, label: 'Reports' },
-    { path: '/addresses', icon: Users, label: 'Address Book' },
-    { path: '/settings', icon: Settings, label: 'Settings' },
+    { path: '/settings', icon: Lock, label: 'Admin Settings' },
   ];
 
   return (
@@ -140,7 +138,6 @@ function App() {
               <Route path="/payment" element={<Payment onBalanceUpdate={fetchBalance} />} />
               <Route path="/history" element={<TransactionHistory />} />
               <Route path="/reports" element={<Reports />} />
-              <Route path="/addresses" element={<AddressBook />} />
               <Route path="/settings" element={<SettingsPage onBalanceUpdate={fetchBalance} />} />
             </Routes>
           </div>
