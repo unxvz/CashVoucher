@@ -11,23 +11,34 @@ async function apiGet(action, params = {}) {
     }
   });
   
-  const response = await fetch(url.toString());
-  return response.json();
+  try {
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      redirect: 'follow',
+    });
+    return response.json();
+  } catch (error) {
+    console.error('API GET Error:', error);
+    return { error: error.message };
+  }
 }
 
-// Helper function for POST requests
+// Helper function for POST requests - using GET with data in URL for Google Apps Script
 async function apiPost(action, data) {
   const url = new URL(API_URL);
   url.searchParams.append('action', action);
+  url.searchParams.append('data', JSON.stringify(data));
   
-  const response = await fetch(url.toString(), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
-  return response.json();
+  try {
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      redirect: 'follow',
+    });
+    return response.json();
+  } catch (error) {
+    console.error('API POST Error:', error);
+    return { error: error.message };
+  }
 }
 
 // ==================== SETTINGS ====================

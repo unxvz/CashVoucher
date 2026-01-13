@@ -15,6 +15,24 @@ function handleRequest(e) {
   const action = e.parameter.action;
   let result;
   
+  // Get data from URL parameter (for GET requests passing data)
+  let data = null;
+  if (e.parameter.data) {
+    try {
+      data = JSON.parse(e.parameter.data);
+    } catch(err) {
+      data = null;
+    }
+  }
+  // Also try POST body
+  if (!data && e.postData && e.postData.contents) {
+    try {
+      data = JSON.parse(e.postData.contents);
+    } catch(err) {
+      data = null;
+    }
+  }
+  
   try {
     switch(action) {
       // Settings
@@ -22,7 +40,7 @@ function handleRequest(e) {
         result = getSettings();
         break;
       case 'updateInitialBalance':
-        result = updateInitialBalance(JSON.parse(e.postData.contents));
+        result = updateInitialBalance(data);
         break;
       
       // Dashboard
@@ -35,7 +53,7 @@ function handleRequest(e) {
         result = getTransactions(e.parameter);
         break;
       case 'createTransaction':
-        result = createTransaction(JSON.parse(e.postData.contents));
+        result = createTransaction(data);
         break;
       case 'getTransaction':
         result = getTransaction(e.parameter.id);
@@ -46,10 +64,10 @@ function handleRequest(e) {
         result = getAddresses();
         break;
       case 'createAddress':
-        result = createAddress(JSON.parse(e.postData.contents));
+        result = createAddress(data);
         break;
       case 'updateAddress':
-        result = updateAddress(JSON.parse(e.postData.contents));
+        result = updateAddress(data);
         break;
       case 'deleteAddress':
         result = deleteAddress(e.parameter.id);
